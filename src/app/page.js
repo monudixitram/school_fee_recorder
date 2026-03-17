@@ -39,7 +39,8 @@ export default function Home() {
   const classes = [
     "Nursery","LKG","KG",
     "1st","2nd","3rd","4th",
-    "5th","5th (A)","5th (B)"
+    "5th","5th (A)","5th (B)" ,
+  "Passed"
   ]
 
   return(
