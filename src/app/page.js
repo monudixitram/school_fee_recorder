@@ -7,13 +7,21 @@ import { useRouter } from "next/navigation"
 
 export default function Home() {
 
-  const { students, feeRecords } = useContext(StudentContext)
+  const {
+    students,
+    feeRecords,
+    getCurrentClass,
+    getCurrentSessionYear
+  } = useContext(StudentContext)
+
   const router = useRouter()
 
   const months = [
     "Apr","May","Jun","Jul","Aug","Sep",
     "Oct","Nov","Dec","Jan","Feb","Mar"
   ]
+
+  const sessionYear = getCurrentSessionYear()
 
   let totalCollected = 0
   let totalExpected = 0
@@ -24,7 +32,7 @@ export default function Home() {
 
     months.forEach((m)=>{
 
-      const key = s.id + "-" + m
+      const key = `${s.id}-${sessionYear}-${m}`
 
       if(feeRecords[key]){
         totalCollected += Number(s.monthlyFee)
@@ -39,8 +47,7 @@ export default function Home() {
   const classes = [
     "Nursery","LKG","KG",
     "1st","2nd","3rd","4th",
-    "5th","5th (A)","5th (B)" ,
-  "Passed"
+    "5th","Passed"
   ]
 
   return(
@@ -77,14 +84,15 @@ export default function Home() {
 
         </div>
 
-
         {/* Class Cards */}
 
         <div className="grid grid-cols-5 gap-4">
 
           {classes.map((c)=>{
 
-            const classStudents = students.filter((s)=>s.class === c)
+            const classStudents = students.filter(
+              (s)=> getCurrentClass(s) === c
+            )
 
             let classExpected = 0
             let classCollected = 0
@@ -95,7 +103,7 @@ export default function Home() {
 
               months.forEach((m)=>{
 
-                const key = s.id + "-" + m
+                const key = `${s.id}-${sessionYear}-${m}`
 
                 if(feeRecords[key]){
                   classCollected += Number(s.monthlyFee)
@@ -138,5 +146,4 @@ export default function Home() {
     </div>
 
   )
-
 }

@@ -6,149 +6,118 @@ import { StudentContext } from "@/context/StudentContext"
 
 export default function FeeRecords(){
 
-  const { students, feeRecords, setFeeRecords } = useContext(StudentContext)
+  const {
+    students,
+    feeRecords,
+    setFeeRecords,
+    getCurrentClass,
+    getCurrentSessionYear
+  } = useContext(StudentContext)
 
   const months = [
     "Apr","May","Jun","Jul","Aug","Sep",
     "Oct","Nov","Dec","Jan","Feb","Mar"
   ]
 
-  const toggleFee = (studentId, month)=>{
-
-    const key = studentId + "-" + month
-
-    setFeeRecords({
-      ...feeRecords,
-      [key]: !feeRecords[key]
-    })
-
+  // ✅ Exam Fees
+  const examFees = {
+    Sep: 200,
+    Dec: 200,
+    Mar: 200
   }
 
-const printReceipt = (student, month)=>{
+  const sessionYear = getCurrentSessionYear()
 
-  const w = window.open("")
+  // ✅ Toggle Fee
+  const toggleFee = (studentId, month)=>{
 
-  w.document.write(`
+    const key = `${studentId}-${sessionYear}-${month}`
 
-  <html>
-  <head>
-    <title>Fee Receipt</title>
-    <style>
-      body{
-        font-family: Arial;
-        padding: 20px;
-      }
+    setFeeRecords((prev)=>({
+      ...prev,
+      [key]: !prev[key]
+    }))
+  }
 
-      .receipt{
-        max-width: 600px;
-        margin: auto;
-        border: 2px solid black;
-        padding: 20px;
-      }
+  // ✅ Print Receipt
+  const printReceipt = (student, month)=>{
 
-      .header{
-        text-align: center;
-        border-bottom: 2px solid black;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-      }
+    const currentClass = getCurrentClass(student)
 
-      .header h2{
-        margin: 0;
-      }
+    const examAmount = examFees[month] || 0
+    const total = Number(student.monthlyFee) + examAmount
 
-      .info{
-        margin-bottom: 15px;
-      }
+    const w = window.open("")
 
-      .info p{
-        margin: 5px 0;
-        font-size: 14px;
-      }
+    w.document.write(`
 
-      table{
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-      }
+    <html>
+    <head>
+      <title>Fee Receipt</title>
+      <style>
+        body{font-family: Arial;padding: 20px;}
+        .receipt{max-width: 600px;margin: auto;border: 2px solid black;padding: 20px;}
+        .header{text-align: center;border-bottom: 2px solid black;margin-bottom: 15px;}
+        table{width: 100%;border-collapse: collapse;margin-top: 10px;}
+        table, th, td{border: 1px solid black;}
+        th, td{padding: 8px;text-align: center;}
+        .footer{margin-top: 30px;display:flex;justify-content:space-between;}
+      </style>
+    </head>
 
-      table, th, td{
-        border: 1px solid black;
-      }
+    <body>
 
-      th, td{
-        padding: 8px;
-        text-align: center;
-      }
+      <div class="receipt">
 
-      .footer{
-        margin-top: 30px;
-        display: flex;
-        justify-content: space-between;
-      }
+        <div class="header">
+          <h2>S.N.D. PUBLIC SCHOOL</h2>
+          <p>Baghauli, Hardoi</p>
+          <h3>Fee Receipt (${sessionYear}-${sessionYear+1})</h3>
+        </div>
 
-      .stamp{
-        border: 1px dashed black;
-        padding: 10px;
-        text-align: center;
-        width: 120px;
-      }
-
-    </style>
-  </head>
-
-  <body>
-
-    <div class="receipt">
-
-      <div class="header">
-        <h2>S.N.D. PUBLIC SCHOOL</h2>
-        <p>Baghauli, Hardoi</p>
-        <h3>Fee Receipt</h3>
-      </div>
-
-      <div class="info">
         <p><b>Name:</b> ${student.name}</p>
-        <p><b>Class:</b> ${student.class}</p>
+        <p><b>Class:</b> ${currentClass}</p>
         <p><b>Month:</b> ${month}</p>
         <p><b>Date:</b> ${new Date().toLocaleDateString()}</p>
-      </div>
 
-      <table>
-        <tr>
-          <th>Description</th>
-          <th>Amount</th>
-        </tr>
-        <tr>
-          <td>Monthly Fee (${month})</td>
-          <td>₹${student.monthlyFee}</td>
-        </tr>
-        <tr>
-          <th>Total</th>
-          <th>₹${student.monthlyFee}</th>
-        </tr>
-      </table>
+        <table>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+          </tr>
 
-      <div class="footer">
-        <div>
-          <p>Signature</p>
+          <tr>
+            <td>Monthly Fee (${month})</td>
+            <td>₹${student.monthlyFee}</td>
+          </tr>
+
+          ${examAmount ? `
+          <tr style="background:#ffeaa7;">
+            <td><b>Exam Fee (${month})</b></td>
+            <td><b>₹${examAmount}</b></td>
+          </tr>` : ""}
+
+          <tr>
+            <th>Total</th>
+            <th>₹${total}</th>
+          </tr>
+
+        </table>
+
+        <div class="footer">
+          <div>Signature</div>
+          <div>School Stamp</div>
         </div>
 
-        <div class="stamp">
-          School Stamp
-        </div>
       </div>
 
-    </div>
+    </body>
+    </html>
+    `)
 
-  </body>
-  </html>
-
-  `)
-
-  w.document.close()
-  w.print()
-}
+    w.document.close()
+    w.print()
+  }
 
   return(
 
@@ -159,75 +128,79 @@ const printReceipt = (student, month)=>{
       <div className="p-8">
 
         <h1 className="text-2xl mb-6">
-          S.N.D. PUBLIC SCHOOL BAGHAULI (HARDOI)
-        </h1>
-
-        <h1 className="text-2xl mb-6">
-          Fee Records
+          Fee Records ({sessionYear}-{sessionYear+1})
         </h1>
 
         <table className="w-full border">
 
           <thead>
-
-            <tr className="bg-gray-200">
-
+            <tr>
               <th className="border px-2">Name</th>
               <th className="border px-2">Class</th>
 
               {months.map((m)=>(
                 <th key={m} className="border px-2">{m}</th>
               ))}
-
             </tr>
-
           </thead>
 
           <tbody>
 
-            {students.map((s)=>(
+            {students.map((s)=>{
 
-              <tr key={s.id} className="border">
+              const currentClass = getCurrentClass(s)
 
-                <td className="border px-2">{s.name}</td>
-                <td className="border px-2">{s.class}</td>
+              return(
+                <tr key={s.id}>
 
-                {months.map((m)=>{
+                  <td className="border px-2">{s.name}</td>
+                  <td className="border px-2">{currentClass}</td>
 
-                  const key = s.id + "-" + m
-                  const paid = feeRecords[key]
+                  {months.map((m)=>{
 
-                  return(
+                    const key = `${s.id}-${sessionYear}-${m}`
+                    const paid = feeRecords[key]
 
-                    <td key={m} className="border px-2 text-center">
+                    return(
+                      <td key={m} className="border text-center">
 
-                      <button
-                        onClick={()=>toggleFee(s.id, m)}
-                        className={`px-2 py-1 rounded text-white ${
-                          paid ? "bg-green-500" : "bg-red-500"
-                        }`}
-                      >
-                        {paid ? "Paid" : "Due"}
-                      </button>
-
-                      {paid && (
                         <button
-                          onClick={()=>printReceipt(s, m)}
-                          className="bg-blue-500 text-white px-2 py-1 rounded ml-1"
+                          onClick={()=>toggleFee(s.id, m)}
+                          className={`px-2 py-1 rounded text-white ${
+                            paid ? "bg-green-500" : "bg-red-500"
+                          }`}
                         >
-                          Print
+                          {paid ? "Paid" : "Due"}
                         </button>
-                      )}
 
-                    </td>
+                        {paid && (
+                          <div className="text-xs mt-1">
 
-                  )
+                            <div>₹{s.monthlyFee}</div>
 
-                })}
+                            {examFees[m] && (
+                              <div className="text-yellow-300">
+                                +₹{examFees[m]} Exam
+                              </div>
+                            )}
 
-              </tr>
+                            <button
+                              onClick={()=>printReceipt(s, m)}
+                              className="bg-blue-500 text-white px-2 py-1 rounded mt-1"
+                            >
+                              Print
+                            </button>
 
-            ))}
+                          </div>
+                        )}
+
+                      </td>
+                    )
+                  })}
+
+                </tr>
+              )
+            })}
 
           </tbody>
 
@@ -238,5 +211,4 @@ const printReceipt = (student, month)=>{
     </div>
 
   )
-
 }
